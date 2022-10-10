@@ -24,6 +24,8 @@ FROM rhysd/actionlint:1.6.20 as actionlint
 FROM scalameta/scalafmt:v3.5.9 as scalafmt
 FROM yoheimuta/protolint:0.41.0 as protolint
 FROM zricethezav/gitleaks:v8.13.0 as gitleaks
+FROM norionomura/swiftlint:latest as swiftlint
+FROM norionomura/swift:525
 
 ##################
 # Get base image #
@@ -73,6 +75,7 @@ RUN apk add --no-cache \
     krb5-libs \
     libc-dev libcurl libffi-dev libgcc \
     libintl libssl1.1 libstdc++ \
+    libressl-dev \
     libxml2-dev libxml2-utils \
     linux-headers \
     lttng-ust-dev \
@@ -194,6 +197,11 @@ COPY --from=scalafmt /bin/scalafmt /usr/bin/
 # Install actionlint #
 ######################
 COPY --from=actionlint /usr/local/bin/actionlint /usr/bin/
+
+#####################
+# Install swiftlint #
+#####################
+COPY --from=swiftlint /usr/bin/swiftlint /usr/bin/swiftlint
 
 #################
 # Install Lintr #
@@ -382,7 +390,8 @@ COPY --from=python_builder /venvs/ /venvs/
 ##################################
 # Configure TFLint plugin folder #
 ##################################
-ENV TFLINT_PLUGIN_DIR="/root/.tflint.d/plugins"
+
+TFLINT_PLUGIN_DIR="/root/.tflint.d/plugins"
 
 ####################################################
 # Install Composer after all Libs have been copied #
